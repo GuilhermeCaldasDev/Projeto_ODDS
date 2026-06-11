@@ -6,6 +6,7 @@ import MatchDetail from './pages/MatchDetail'
 import Teams from './pages/Teams'
 import TeamDetail from './pages/TeamDetail'
 import Predictions from './pages/Predictions'
+import Bracket from './pages/Bracket'
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
             <Route path="/teams" element={<Teams />} />
             <Route path="/teams/:name" element={<TeamDetail />} />
             <Route path="/predictions" element={<Predictions />} />
+            <Route path="/bracket" element={<Bracket />} />
           </Routes>
         </main>
       </div>

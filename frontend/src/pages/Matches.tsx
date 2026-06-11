@@ -4,7 +4,7 @@ import { Match } from '../types'
 import MatchCard from '../components/MatchCard'
 import clsx from 'clsx'
 
-const GROUPS = ['Todos', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
+const GROUPS = ['Todos', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L']
 
 export default function Matches() {
   const [matches, setMatches] = useState<Match[]>([])

@@ -33,7 +33,7 @@ export default function Teams() {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold text-white mb-1">Seleções</h1>
-          <p className="text-gray-400 text-sm">32 seleções qualificadas para a Copa 2026</p>
+          <p className="text-gray-400 text-sm">48 seleções qualificadas para a Copa 2026</p>
         </div>
         <div className="flex gap-2">
           <button

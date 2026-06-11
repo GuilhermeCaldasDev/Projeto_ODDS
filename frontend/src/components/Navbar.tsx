@@ -6,6 +6,7 @@ const navLinks = [
   { path: '/matches', label: 'Jogos' },
   { path: '/teams', label: 'Seleções' },
   { path: '/predictions', label: 'Apostas' },
+  { path: '/bracket', label: 'Chaveamento' },
 ]
 
 export default function Navbar() {

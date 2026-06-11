@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routes import matches, teams, predictions
+from app.routes import matches, teams, predictions, bracket
 
 app = FastAPI(
     title="World Cup 2026 Betting Analysis API",
@@ -19,6 +19,7 @@ app.add_middleware(
 app.include_router(matches.router, prefix="/api")
 app.include_router(teams.router, prefix="/api")
 app.include_router(predictions.router, prefix="/api")
+app.include_router(bracket.router, prefix="/api")
 
 
 @app.get("/")
