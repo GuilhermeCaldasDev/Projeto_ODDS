@@ -1,0 +1,67 @@
+name: Deploy → Oracle VM
+
+on:
+  push:
+    branches:
+      - main
+      - claude/world-cup-betting-app-16ya8t
+
+jobs:
+  deploy:
+    name: Build & Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      # ── Frontend: build estático ──────────────────────────────────────
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Build React (produção)
+        run: |
+          cd frontend
+          npm ci
+          npm run build
+
+      # ── Enviar arquivos para a VM via rsync ───────────────────────────
+      - name: Configurar chave SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.VM_SSH_KEY }}" > ~/.ssh/vm_key
+          chmod 600 ~/.ssh/vm_key
+          ssh-keyscan -H "${{ secrets.VM_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Rsync para VM
+        run: |
+          rsync -avz --delete \
+            --exclude='.git' \
+            --exclude='node_modules' \
+            --exclude='__pycache__' \
+            --exclude='*.pyc' \
+            --exclude='venv' \
+            --exclude='.env' \
+            -e "ssh -i ~/.ssh/vm_key" \
+            ./ opc@${{ secrets.VM_HOST }}:/opt/projeto-odds/
+
+      # ── Reiniciar serviços na VM ──────────────────────────────────────
+      - name: Atualizar deps Python e reiniciar
+        run: |
+          ssh -i ~/.ssh/vm_key opc@${{ secrets.VM_HOST }} "
+            set -e
+            echo '→ Instalando dependências Python...'
+            /opt/projeto-odds/venv/bin/pip install -q -r /opt/projeto-odds/backend/requirements.txt
+
+            echo '→ Reiniciando backend...'
+            sudo systemctl restart projeto-odds-api
+
+            echo '→ Recarregando Nginx...'
+            sudo systemctl reload nginx
+
+            echo '✓ Deploy concluído!'
+          "
