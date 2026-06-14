@@ -1,6 +1,7 @@
 import { Prediction, BettingTip } from '../types'
 import ConfidenceBar from './ConfidenceBar'
 import clsx from 'clsx'
+import { etToBRT } from '../utils/time'
 
 interface PredictionCardProps {
   prediction: Prediction | BettingTip
@@ -10,6 +11,7 @@ interface PredictionCardProps {
     away_team: string
     away_flag: string
     date: string
+    time?: string
     match_id: number
   }
   compact?: boolean
@@ -17,10 +19,13 @@ interface PredictionCardProps {
 
 export default function PredictionCard({ prediction, matchInfo, compact = false }: PredictionCardProps) {
   const marketColors: Record<string, string> = {
-    '1X2': 'text-blue-400 bg-blue-500/10 border-blue-500/30',
-    'Over/Under 2.5': 'text-purple-400 bg-purple-500/10 border-purple-500/30',
-    'BTTS': 'text-orange-400 bg-orange-500/10 border-orange-500/30',
-    'Asian Handicap': 'text-cyan-400 bg-cyan-500/10 border-cyan-500/30',
+    '1X2':                'text-blue-400   bg-blue-500/10   border-blue-500/30',
+    'Mais/Menos 2.5':     'text-purple-400 bg-purple-500/10 border-purple-500/30',
+    'Ambas Marcam':       'text-orange-400 bg-orange-500/10 border-orange-500/30',
+    'Handicap Asiático':  'text-cyan-400   bg-cyan-500/10   border-cyan-500/30',
+    'Escanteios':         'text-yellow-400 bg-yellow-500/10 border-yellow-500/30',
+    'Cartões':            'text-red-400    bg-red-500/10    border-red-500/30',
+    'Defesas do Goleiro': 'text-green-400  bg-green-500/10  border-green-500/30',
   }
 
   const marketColor = marketColors[prediction.market] || 'text-gray-400 bg-gray-500/10 border-gray-500/30'
@@ -40,10 +45,15 @@ export default function PredictionCard({ prediction, matchInfo, compact = false 
         <div className="flex items-center gap-2 mb-3 pb-3 border-b border-gray-700">
           <span className="text-lg">{matchInfo.home_flag}</span>
           <span className="text-sm font-medium text-white">{matchInfo.home_team}</span>
-          <span className="text-gray-500 text-xs">vs</span>
+          <span className="text-gray-500 text-xs">x</span>
           <span className="text-sm font-medium text-white">{matchInfo.away_team}</span>
           <span className="text-lg">{matchInfo.away_flag}</span>
-          <span className="ml-auto text-xs text-gray-500">{matchInfo.date}</span>
+          <div className="ml-auto text-right">
+            {matchInfo.time && (
+              <div className="text-xs font-semibold text-green-400">{etToBRT(matchInfo.time)} <span className="text-gray-600">BRT</span></div>
+            )}
+            <div className="text-xs text-gray-500">{matchInfo.date}</div>
+          </div>
         </div>
       )}
 
@@ -55,7 +65,7 @@ export default function PredictionCard({ prediction, matchInfo, compact = false 
         <div className="flex items-center gap-2">
           {prediction.value.has_value && (
             <span className="text-xs bg-green-500/20 text-green-400 border border-green-500/30 px-2 py-0.5 rounded font-bold">
-              VALUE BET
+              VALOR
             </span>
           )}
           <span className="text-sm font-bold text-white bg-gray-700 px-3 py-1 rounded-lg">
@@ -74,7 +84,7 @@ export default function PredictionCard({ prediction, matchInfo, compact = false 
         Probabilidade: <span className="text-white font-medium">{(prediction.probability * 100).toFixed(1)}%</span>
         {prediction.value.has_value && (
           <span className="ml-2 text-green-400">
-            · Edge: +{prediction.value.edge.toFixed(1)}%
+            · Vantagem: +{prediction.value.edge.toFixed(1)}%
           </span>
         )}
       </div>

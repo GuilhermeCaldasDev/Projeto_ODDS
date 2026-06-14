@@ -4,6 +4,24 @@ export interface RecentResult {
   score: string
 }
 
+export interface TournamentStats {
+  group: string
+  played: number
+  wins: number
+  draws: number
+  losses: number
+  goals_for: number
+  goals_against: number
+  goal_diff: number
+  points: number
+  shots: number
+  shots_on_target: number
+  corners: number
+  fouls: number
+  yellow_cards: number
+  red_cards: number
+}
+
 export interface Team {
   name: string
   flag: string
@@ -18,6 +36,7 @@ export interface Team {
   key_players: string[]
   recent_results: RecentResult[]
   form_score?: number
+  tournament_stats?: TournamentStats
 }
 
 export interface WinProbabilities {
@@ -55,6 +74,26 @@ export interface BettingTip {
   value: ValueBet
 }
 
+export interface LiveTeamStats {
+  corners: number
+  shots: number
+  shots_on_target: number
+  fouls: number
+  possession: number
+}
+
+export interface LiveStats {
+  home: LiveTeamStats
+  away: LiveTeamStats
+}
+
+export interface LiveEvent {
+  type: 'goal' | 'penalty' | 'own_goal' | 'yellow_card' | 'red_card'
+  minute: string
+  team: 'home' | 'away'
+  player: string
+}
+
 export interface Match {
   id: number
   home_team: string
@@ -64,6 +103,11 @@ export interface Match {
   time: string
   venue: string
   status: 'upcoming' | 'live' | 'finished'
+  home_score?: number
+  away_score?: number
+  minute?: string
+  live_stats?: LiveStats
+  live_events?: LiveEvent[]
   home_team_data?: Team
   away_team_data?: Team
   win_probabilities?: WinProbabilities

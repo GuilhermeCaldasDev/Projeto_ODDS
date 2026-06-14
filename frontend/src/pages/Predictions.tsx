@@ -4,7 +4,7 @@ import { Prediction } from '../types'
 import PredictionCard from '../components/PredictionCard'
 import clsx from 'clsx'
 
-const MARKETS = ['Todos', '1X2', 'Over/Under 2.5', 'BTTS', 'Asian Handicap']
+const MARKETS = ['Todos', '1X2', 'Mais/Menos 2.5', 'Ambas Marcam', 'Handicap Asiático', 'Escanteios', 'Cartões', 'Defesas do Goleiro']
 
 export default function Predictions() {
   const [predictions, setPredictions] = useState<Prediction[]>([])
@@ -41,7 +41,7 @@ export default function Predictions() {
         </div>
         <div className="bg-gray-800 rounded-xl border border-gray-700 p-3 text-center">
           <div className="text-xl font-bold text-yellow-400">{valueBets.length}</div>
-          <div className="text-xs text-gray-400">Value Bets</div>
+          <div className="text-xs text-gray-400">Apostas de Valor</div>
         </div>
         <div className="bg-gray-800 rounded-xl border border-gray-700 p-3 text-center">
           <div className="text-xl font-bold text-blue-400">{highConf.length}</div>

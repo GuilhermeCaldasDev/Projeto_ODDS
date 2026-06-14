@@ -17,27 +17,52 @@ def _simulate_match(team1: Dict, team2: Dict) -> Tuple[str, float, float, float]
     return winner, round(home_p, 4), round(draw_p, 4), round(away_p, 4)
 
 
-def simulate_group(teams: List[Dict]) -> List[Dict]:
+def simulate_group_with_results(teams: List[Dict], group_matches: List[Dict]) -> List[Dict]:
     """
-    Simulate round-robin and return ranked list with predicted points,
-    goal diff, and qualification probability.
+    Simulate round-robin using real scores for finished matches and
+    model probabilities for upcoming/live matches.
     """
-    standings = {t["name"]: {"team": t, "pts": 0, "gf": 0, "ga": 0, "w": 0, "d": 0, "l": 0} for t in teams}
+    standings = {t["name"]: {"team": t, "pts": 0.0, "gf": 0.0, "ga": 0.0, "w": 0, "d": 0, "l": 0} for t in teams}
+    team_map = {t["name"]: t for t in teams}
 
-    for i, t1 in enumerate(teams):
-        for t2 in teams[i + 1:]:
+    for match in group_matches:
+        t1 = team_map.get(match["home_team"])
+        t2 = team_map.get(match["away_team"])
+        if not t1 or not t2:
+            continue
+
+        if match.get("home_score") is not None:
+            # Use real result
+            hg = match["home_score"]
+            ag = match["away_score"]
+            standings[t1["name"]]["gf"] += hg
+            standings[t1["name"]]["ga"] += ag
+            standings[t2["name"]]["gf"] += ag
+            standings[t2["name"]]["ga"] += hg
+            if hg > ag:
+                standings[t1["name"]]["pts"] += 3
+                standings[t1["name"]]["w"] += 1
+                standings[t2["name"]]["l"] += 1
+            elif hg < ag:
+                standings[t2["name"]]["pts"] += 3
+                standings[t2["name"]]["w"] += 1
+                standings[t1["name"]]["l"] += 1
+            else:
+                standings[t1["name"]]["pts"] += 1
+                standings[t2["name"]]["pts"] += 1
+                standings[t1["name"]]["d"] += 1
+                standings[t2["name"]]["d"] += 1
+        else:
+            # Simulate unplayed match
             wp = calculate_win_probabilities(t1, t2)
             gp = predict_goals(t1, t2)
-            # Use expected goals for table simulation
             home_xg = gp["home_expected_goals"]
             away_xg = gp["away_expected_goals"]
             standings[t1["name"]]["gf"] += home_xg
             standings[t1["name"]]["ga"] += away_xg
             standings[t2["name"]]["gf"] += away_xg
             standings[t2["name"]]["ga"] += home_xg
-            # Assign points based on probability
             h, d, a = wp["home"], wp["draw"], wp["away"]
-            # Convert to expected points
             standings[t1["name"]]["pts"] += h * 3 + d * 1
             standings[t2["name"]]["pts"] += a * 3 + d * 1
             if h > a:
@@ -75,8 +100,14 @@ def simulate_group(teams: List[Dict]) -> List[Dict]:
     return result
 
 
-def simulate_all_groups(teams_by_group: Dict[str, List[Dict]]) -> Dict[str, List[Dict]]:
-    return {group: simulate_group(teams) for group, teams in teams_by_group.items()}
+def simulate_all_groups(teams_by_group: Dict[str, List[Dict]], matches: List[Dict] = None) -> Dict[str, List[Dict]]:
+    return {
+        group: simulate_group_with_results(
+            teams,
+            [m for m in (matches or []) if m.get("group") == group]
+        )
+        for group, teams in teams_by_group.items()
+    }
 
 
 def get_third_place_qualifiers(group_results: Dict[str, List[Dict]], n: int = 8) -> List[Dict]:

@@ -2,9 +2,60 @@ import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { fetchTeam } from '../api/teams'
 import { fetchMatches } from '../api/matches'
-import { Team, Match } from '../types'
+import { Team, Match, TournamentStats } from '../types'
 import FormIndicator from '../components/FormIndicator'
 import ConfidenceBar from '../components/ConfidenceBar'
+
+function StatTile({ label, value, sub, color = 'text-white' }: { label: string; value: string | number; sub?: string; color?: string }) {
+  return (
+    <div className="bg-gray-700/50 rounded-lg p-3 text-center">
+      <div className={`text-2xl font-bold ${color}`}>{value}</div>
+      {sub && <div className="text-[10px] text-gray-500">{sub}</div>}
+      <div className="text-xs text-gray-400 mt-1">{label}</div>
+    </div>
+  )
+}
+
+function TournamentStatsBlock({ ts }: { ts: TournamentStats }) {
+  const perGame = (n: number) => ts.played ? (n / ts.played).toFixed(1) : '0'
+  return (
+    <div className="bg-gray-800 rounded-xl border border-green-500/30 p-4">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-sm font-semibold text-green-400">Copa 2026 — Dados Reais</h2>
+        <span className="text-xs text-gray-500">{ts.played} jogo{ts.played !== 1 ? 's' : ''} disputado{ts.played !== 1 ? 's' : ''}</span>
+      </div>
+
+      {/* Resultado */}
+      <div className="grid grid-cols-4 gap-2 mb-3">
+        <StatTile label="Pontos" value={ts.points} color="text-yellow-400" />
+        <StatTile label="Vitórias" value={ts.wins} color="text-green-400" />
+        <StatTile label="Empates" value={ts.draws} color="text-yellow-300" />
+        <StatTile label="Derrotas" value={ts.losses} color="text-red-400" />
+      </div>
+
+      {/* Gols */}
+      <div className="grid grid-cols-3 gap-2 mb-3">
+        <StatTile label="Gols Marcados" value={ts.goals_for} sub={`${perGame(ts.goals_for)}/jogo`} color="text-green-400" />
+        <StatTile label="Gols Sofridos" value={ts.goals_against} sub={`${perGame(ts.goals_against)}/jogo`} color="text-red-400" />
+        <StatTile label="Saldo" value={ts.goal_diff >= 0 ? `+${ts.goal_diff}` : `${ts.goal_diff}`} color={ts.goal_diff >= 0 ? 'text-green-400' : 'text-red-400'} />
+      </div>
+
+      {/* Stats de jogo */}
+      <div className="grid grid-cols-3 gap-2 mb-3">
+        <StatTile label="Finalizações" value={ts.shots} sub={`${perGame(ts.shots)}/jogo`} color="text-blue-400" />
+        <StatTile label="No Gol" value={ts.shots_on_target} sub={`${perGame(ts.shots_on_target)}/jogo`} color="text-blue-300" />
+        <StatTile label="Escanteios" value={ts.corners} sub={`${perGame(ts.corners)}/jogo`} color="text-purple-400" />
+      </div>
+
+      {/* Disciplina */}
+      <div className="grid grid-cols-3 gap-2">
+        <StatTile label="Faltas" value={ts.fouls} sub={`${perGame(ts.fouls)}/jogo`} color="text-orange-400" />
+        <StatTile label="Cartões Amarelos" value={ts.yellow_cards} color="text-yellow-400" />
+        <StatTile label="Cartões Vermelhos" value={ts.red_cards} color="text-red-500" />
+      </div>
+    </div>
+  )
+}
 
 export default function TeamDetail() {
   const { name } = useParams<{ name: string }>()
@@ -81,6 +132,15 @@ export default function TeamDetail() {
           </div>
         </div>
       </div>
+
+      {/* Copa 2026 Tournament Stats */}
+      {team.tournament_stats && team.tournament_stats.played > 0 ? (
+        <TournamentStatsBlock ts={team.tournament_stats} />
+      ) : (
+        <div className="bg-gray-800/50 rounded-xl border border-gray-700/50 p-4 text-center text-gray-500 text-sm">
+          Ainda não jogou na Copa 2026
+        </div>
+      )}
 
       {/* Stats Grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

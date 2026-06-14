@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.data.world_cup_data import TEAMS, KNOCKOUT_BRACKET, GROUPS, get_teams_by_group
+from app.data.world_cup_data import TEAMS, MATCHES, KNOCKOUT_BRACKET, GROUPS, get_teams_by_group
 from app.services.bracket import simulate_all_groups, get_third_place_qualifiers, simulate_ko_match
 
 router = APIRouter()
@@ -7,9 +7,9 @@ router = APIRouter()
 
 @router.get("/bracket/predict")
 def predict_bracket():
-    # Step 1 — simulate all 12 groups
+    # Step 1 — simulate all 12 groups (using real results for finished matches)
     teams_by_group = {g: get_teams_by_group(g) for g in GROUPS}
-    group_results = simulate_all_groups(teams_by_group)
+    group_results = simulate_all_groups(teams_by_group, MATCHES)
 
     # Step 2 — extract qualifiers
     qualifiers = {}  # slot -> team dict
