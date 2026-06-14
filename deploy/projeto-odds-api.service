@@ -1,0 +1,17 @@
+[Unit]
+Description=Projeto ODDS - FastAPI Backend (Copa 2026)
+After=network.target
+
+[Service]
+Type=simple
+User=opc
+WorkingDirectory=/opt/projeto-odds/backend
+ExecStart=/opt/projeto-odds/venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target
