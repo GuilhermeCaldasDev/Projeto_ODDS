@@ -1,15 +1,22 @@
 import { useEffect, useState } from 'react'
-import { fetchAllPredictions } from '../api/predictions'
+import { fetchAllPredictions, fetchOddsStatus } from '../api/predictions'
 import { Prediction } from '../types'
 import PredictionCard from '../components/PredictionCard'
 import clsx from 'clsx'
 
 const MARKETS = ['Todos', '1X2', 'Mais/Menos 2.5', 'Ambas Marcam', 'Handicap Asiático', 'Escanteios', 'Cartões', 'Defesas do Goleiro']
 
+interface OddsStatus { odds_api_configured: boolean; quota_remaining: number | null }
+
 export default function Predictions() {
   const [predictions, setPredictions] = useState<Prediction[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedMarket, setSelectedMarket] = useState('Todos')
+  const [oddsStatus, setOddsStatus] = useState<OddsStatus | null>(null)
+
+  useEffect(() => {
+    fetchOddsStatus().then(setOddsStatus).catch(() => null)
+  }, [])
 
   useEffect(() => {
     const market = selectedMarket === 'Todos' ? undefined : selectedMarket
@@ -28,10 +35,30 @@ export default function Predictions() {
   return (
     <div>
       {/* Header */}
-      <div className="mb-6">
+      <div className="mb-4">
         <h1 className="text-2xl font-bold text-white mb-1">Top Apostas</h1>
         <p className="text-gray-400 text-sm">Todas as previsões ordenadas por confiança</p>
       </div>
+
+      {/* Odds API status banner */}
+      {oddsStatus && (
+        oddsStatus.odds_api_configured ? (
+          <div className="flex items-center gap-2 bg-green-900/20 border border-green-700/40 rounded-lg px-4 py-2 mb-5 text-sm">
+            <span className="w-2 h-2 rounded-full bg-green-400 shrink-0" />
+            <span className="text-green-300 font-medium">Odds reais ativas</span>
+            <span className="text-gray-500">· The Odds API</span>
+            {oddsStatus.quota_remaining != null && (
+              <span className="ml-auto text-xs text-gray-500">{oddsStatus.quota_remaining} req restantes</span>
+            )}
+          </div>
+        ) : (
+          <div className="flex items-center gap-2 bg-yellow-900/20 border border-yellow-700/40 rounded-lg px-4 py-2 mb-5 text-sm">
+            <span className="text-yellow-400">⚠</span>
+            <span className="text-yellow-300 font-medium">Odds estimadas pelo modelo</span>
+            <span className="text-gray-500">· Configure <code className="bg-gray-800 px-1 rounded text-xs">ODDS_API_KEY</code> para odds reais de casas de apostas</span>
+          </div>
+        )
+      )}
 
       {/* Summary Stats */}
       <div className="grid grid-cols-3 gap-4 mb-6">

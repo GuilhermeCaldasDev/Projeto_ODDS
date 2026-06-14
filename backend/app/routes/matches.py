@@ -12,6 +12,7 @@ from app.services.analysis import (
     analyze_form,
 )
 from app.services.live_scores import fetch_live_scores
+from app.services.odds_fetcher import enrich_tips_with_real_odds, is_configured as odds_configured
 
 router = APIRouter()
 
@@ -64,6 +65,7 @@ def get_all_matches(group: Optional[str] = Query(None)):
         win_probs = calculate_win_probabilities(team1, team2)
         goals_pred = predict_goals(team1, team2)
         tips = get_betting_tips(match, team1, team2)
+        tips = enrich_tips_with_real_odds(tips, match["home_team"], match["away_team"])
         top_tip = max(tips, key=lambda t: t["confidence"])
 
         # Try to get real-time score/stats from ESPN
@@ -121,6 +123,7 @@ def get_match_detail(match_id: int):
     win_probs = calculate_win_probabilities(team1, team2)
     goals_pred = predict_goals(team1, team2)
     tips = get_betting_tips(match, team1, team2)
+    tips = enrich_tips_with_real_odds(tips, match["home_team"], match["away_team"])
     form1 = analyze_form(team1)
     form2 = analyze_form(team2)
 
@@ -162,6 +165,7 @@ def get_match_detail(match_id: int):
         "betting_tips": tips,
         "home_form_score": form1,
         "away_form_score": form2,
+        "odds_api_configured": odds_configured(),
     }
 
 

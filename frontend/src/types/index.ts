@@ -63,6 +63,18 @@ export interface ValueBet {
   edge: number
 }
 
+export interface RealOdds {
+  price: number
+  bookmaker: string
+  bookmaker_key: string
+}
+
+export interface RealValue {
+  has_value: boolean
+  value_percentage: number
+  edge: number
+}
+
 export interface BettingTip {
   market: string
   recommendation: string
@@ -72,6 +84,9 @@ export interface BettingTip {
   odds_estimate: number
   reasoning: string
   value: ValueBet
+  real_odds?: RealOdds | null
+  real_value?: RealValue | null
+  bookmakers_available?: number
 }
 
 export interface LiveTeamStats {

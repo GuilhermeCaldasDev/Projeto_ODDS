@@ -5,6 +5,7 @@ from datetime import datetime, timezone, timedelta
 BRT = timezone(timedelta(hours=-3))
 from app.data.world_cup_data import MATCHES, get_team
 from app.services.analysis import get_betting_tips, predict_goals, calculate_win_probabilities
+from app.services.odds_fetcher import enrich_tips_with_real_odds, is_configured as odds_configured, quota_remaining
 
 router = APIRouter()
 
@@ -22,6 +23,7 @@ def _build_all_predictions(only_today: bool = False):
         if not team1 or not team2:
             continue
         tips = get_betting_tips(match, team1, team2)
+        tips = enrich_tips_with_real_odds(tips, match["home_team"], match["away_team"])
         goals = predict_goals(team1, team2)
         win_probs = calculate_win_probabilities(team1, team2)
         for tip in tips:
@@ -40,6 +42,14 @@ def _build_all_predictions(only_today: bool = False):
                 **tip,
             })
     return all_tips
+
+
+@router.get("/predictions/status")
+def get_odds_status():
+    return {
+        "odds_api_configured": odds_configured(),
+        "quota_remaining": quota_remaining(),
+    }
 
 
 @router.get("/predictions/top")
